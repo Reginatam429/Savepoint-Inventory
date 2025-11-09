@@ -174,6 +174,8 @@ Table inventory_audit {
 
 - I learned how to configure a trigger on table changes (specifically an AFTER UPDATE trigger on inventory.quantity_on_hand) that automatically logs all stock-level changes into an audit table (inventory_audit). This moves the logging responsibility out of application code and into the database itself. PostgreSQL Docs: Triggers → https://www.postgresql.org/docs/current/triggers.html
 
+- To make the API and reports easy to demo and test, I split seeding into two stages: Base data (`db/seed.sql`) and Synthetic sales data (`db/seed_sales.sql`)
+
 # Future Development/ Wishlist
 - Add loyalty tier to customers to allow filtering by loyalty and tracking frequent customers - Bronze, Silver, Gold, etc.
 - Add in preorders for filtering and tracking for when the game is released
