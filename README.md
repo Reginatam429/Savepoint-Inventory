@@ -145,6 +145,39 @@ http://localhost:3000/docs
 http://localhost:3000/health
  → Basic API health check
 
+## 🧪 Testing
+
+The backend has both **functional** and **integration** tests.
+
+### Functional Test Suites
+
+1. `products.functional.test.js`
+   - Tests `GET /products` (returns a non-empty list with the expected shape)
+   - Tests `POST /products` validation (missing required fields returns `400`)
+
+2. `inventory.functional.test.js`
+   - Tests `GET /inventory/low-stock` returns an array
+   - Tests `POST /inventory/receive` validation errors for missing fields
+
+### Integration Test Suites
+
+1. `sales.integration.test.js`
+   - Calls `POST /sales` end-to-end
+   - Verifies:
+     - A new `sales_orders` row is created
+     - Inventory for the product is decremented
+     - A corresponding `inventory_audit` record is written by the trigger
+
+2. `reports.integration.test.js`
+   - Calls `GET /reports/top-products` and `GET /reports/sales-by-channel`
+   - Verifies the shape of aggregated data (top sellers and revenue per channel), based on the seeded sales data
+
+### How to Run Tests
+
+```bash
+cd server
+npm test
+```
 ## 🛠 Tech Stack
 **Frontend**  
 
