@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import { pool } from "./db.js";
+import cors from "cors";
 import productsRouter from "./routes/products.js";
 import suppliersRouter from "./routes/suppliers.js";
 import customersRouter from "./routes/customers.js";
@@ -12,6 +13,8 @@ import { swaggerUi, swaggerSpec } from "./swagger.js";
 dotenv.config();
 
 const app = express();
+app.use(express.json());
+app.use(cors());
 app.use(express.json());
 
 app.get("/", (req, res) => {
