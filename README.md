@@ -94,8 +94,21 @@ Table inventory_audit {
 
 ---
 <br></br>
+## 🚀 Getting started
 
-# 🏪 Dashboard & Reporting
+### Applying schema and seeds locally
+
+```bash
+cd server
+psql -d savepoint_inventory -f db/schema.sql
+psql -d savepoint_inventory -f db/seed.sql
+psql -d savepoint_inventory -f db/procedures.sql
+psql -d savepoint_inventory -f db/triggers.sql
+psql -d savepoint_inventory -f db/seed_sales.sql   # optional but recommended so you have a good number of sales data to test
+```
+
+
+## 🏪 Dashboard & Reporting
 
  - View overall sales, revenue, and inventory status on a single dashboard.
 
@@ -161,7 +174,7 @@ Table inventory_audit {
 
  - Evaluate supplier performance through joined sales data.
 
-# Implementation Notes:
+## Implementation Notes:
 - Design Process:
     - Exercise: Custom version of Retail Inventory System
     - Theme: Video game store admin tool
