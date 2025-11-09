@@ -7,11 +7,16 @@ import customersRouter from "./routes/customers.js";
 import salesRouter from "./routes/sales.js";
 import inventoryRouter from "./routes/inventory.js";
 import reportsRouter from "./routes/reports.js";
+import { swaggerUi, swaggerSpec } from "./swagger.js";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+
+app.get("/", (req, res) => {
+    res.redirect("/docs");
+});
 
 app.get("/health", async (req, res) => {
     try {
@@ -30,6 +35,9 @@ app.use("/customers", customersRouter);
 app.use("/sales", salesRouter);
 app.use("/inventory", inventoryRouter);
 app.use("/reports", reportsRouter);
+
+// Swagger docs
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -8,6 +8,11 @@
 ```
 🎮 SAVEPOINT INVENTORY | SQL + Node.js Inventory Management System
 
+SavePoint Inventory is a full-stack SQL-driven inventory management system themed around a modern video game store, inspired by Sony Interactive Entertainment. I chose to build a **Retail Inventory Management System**, but adapted it into a **video game store admin dashboard** — “SavePoint Inventory”.
+
+> 💻 Frontend Deployment: https://tba.com
+
+> 🌐 Backend API Deployment: https://savepoint-inventory-api-f31a737b8235.herokuapp.com/
 ## Data Model and User Stories
 
 Data Model:
@@ -94,9 +99,25 @@ Table inventory_audit {
 
 ---
 <br></br>
-## 🚀 Getting started
+## ⚙️ Environment Setup
 
-### Applying schema and seeds locally
+### Local Development
+
+1. **Clone the repo**
+    ```bash
+   git clone https://github.com/your-username/Savepoint-Inventory.git
+   cd Savepoint-Inventory/server
+    ```
+2. **Install dependencies**
+    ```bash
+    npm install
+    ```
+3. **Create a local database**
+    ```bash
+    createdb savepoint_inventory
+    ```
+
+4. **Apply schema and seeds**
 
 ```bash
 cd server
@@ -106,7 +127,39 @@ psql -d savepoint_inventory -f db/procedures.sql
 psql -d savepoint_inventory -f db/triggers.sql
 psql -d savepoint_inventory -f db/seed_sales.sql   # optional but recommended so you have a good number of sales data to test
 ```
+5. **Set up your .env file**
 
+```bash
+DATABASE_URL=postgres://localhost:5432/savepoint_inventory
+PORT=3000
+```
+6. **Run the backend**
+```bash
+npm run dev
+```
+
+Your API will start at:
+http://localhost:3000/docs
+ → Swagger UI
+
+http://localhost:3000/health
+ → Basic API health check
+
+## 🛠 Tech Stack
+**Frontend**  
+
+- React (Vite)  
+- React Router DOM  
+- CSS Modules  
+- Fetch API
+
+**Backend**  
+
+- Node.js  
+- Express.js  
+- PostgreSQL  
+- Swagger UI
+- Heroku 
 
 ## 🏪 Dashboard & Reporting
 
