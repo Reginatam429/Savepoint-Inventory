@@ -111,28 +111,20 @@ CREATE OR REPLACE FUNCTION sp_receive_stock(
 RETURNS VOID
 LANGUAGE plpgsql
 AS $$
-DECLARE
-    v_exists INTEGER;
 BEGIN
     IF p_quantity <= 0 THEN
         RAISE EXCEPTION 'Quantity must be greater than zero';
     END IF;
 
-    SELECT COUNT(*) INTO v_exists
-    FROM inventory
-    WHERE product_id = p_product_id
-    FOR UPDATE;
-
-    IF v_exists = 0 THEN
-        RAISE EXCEPTION 'No inventory row found for product_id=%', p_product_id;
-    END IF;
-
+    -- Update inventory directly; IF NOT FOUND checks if any row was updated
     UPDATE inventory
     SET
         quantity_on_hand = quantity_on_hand + p_quantity,
         updated_at       = CURRENT_TIMESTAMP
     WHERE product_id = p_product_id;
 
-    -- Trigger will log the inventory change automatically
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No inventory row found for product_id=%', p_product_id;
+    END IF;
 END;
 $$;

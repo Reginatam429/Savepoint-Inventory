@@ -5,6 +5,7 @@ import productsRouter from "./routes/products.js";
 import suppliersRouter from "./routes/suppliers.js";
 import customersRouter from "./routes/customers.js";
 import salesRouter from "./routes/sales.js";
+import inventoryRouter from "./routes/inventory.js";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use("/products", productsRouter);
 app.use("/suppliers", suppliersRouter);
 app.use("/customers", customersRouter);
 app.use("/sales", salesRouter);
+app.use("/inventory", inventoryRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
