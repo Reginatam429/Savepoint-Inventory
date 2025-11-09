@@ -10,7 +10,7 @@
 
 SavePoint Inventory is a full-stack SQL-driven inventory management system themed around a modern video game store, inspired by Sony Interactive Entertainment. I chose to build a **Retail Inventory Management System**, but adapted it into a **video game store admin dashboard** — “SavePoint Inventory”.
 
-> 💻 Frontend Deployment: https://tba.com
+> 💻 Frontend Deployment: https://savepoint-inventory.netlify.app/
 
 > 🌐 Backend API Deployment: https://savepoint-inventory-api-f31a737b8235.herokuapp.com/
 ## Data Model and User Stories
