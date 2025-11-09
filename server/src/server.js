@@ -4,6 +4,7 @@ import { pool } from "./db.js";
 import productsRouter from "./routes/products.js";
 import suppliersRouter from "./routes/suppliers.js";
 import customersRouter from "./routes/customers.js";
+import salesRouter from "./routes/sales.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.get("/health", async (req, res) => {
 app.use("/products", productsRouter);
 app.use("/suppliers", suppliersRouter);
 app.use("/customers", customersRouter);
+app.use("/sales", salesRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -169,6 +169,10 @@ Table inventory_audit {
 - Data Model Plan:
     - Decided to add online sales as a second sales channel to make the system more realistic.
     - Added a 'channel' column to sales_orders and updated stored procedures and reports accordingly
+## Learnings
+- I learned how to encapsulate business logic inside the database layer by writing SQL functions such as sp_record_sale and sp_receive_stock. These functions allow me to perform multiple steps (insert order, insert order items, update inventory) in a single transactional call, enforcing rules (e.g., quantity must be >0, sufficient stock) and returning a meaningful result (order ID).PostgreSQL Docs: Functions → https://www.postgresql.org/docs/current/functions.html
+
+- I learned how to configure a trigger on table changes (specifically an AFTER UPDATE trigger on inventory.quantity_on_hand) that automatically logs all stock-level changes into an audit table (inventory_audit). This moves the logging responsibility out of application code and into the database itself. PostgreSQL Docs: Triggers → https://www.postgresql.org/docs/current/triggers.html
 
 # Future Development/ Wishlist
 - Add loyalty tier to customers to allow filtering by loyalty and tracking frequent customers - Bronze, Silver, Gold, etc.
