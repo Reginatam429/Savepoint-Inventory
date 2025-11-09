@@ -12,7 +12,8 @@
 
 Data Model:
 
-![Data Model](/assets/savepoint-datamodel.png)
+![Data Model](assets/datamodel.gif)
+
 
 <details>
   <summary>🖱️ Click to view SQL table definitions</summary>
