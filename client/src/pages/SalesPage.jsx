@@ -215,53 +215,57 @@ const formatCurrency = (value) => {
             </div>
 
             <div className="page-filters">
-            <div className="filter-group-inline">
-                <span className="filter-label-inline">Sort by date:</span>
-                <select
-                className="filter-select-inline"
-                value={sortDirection}
-                onChange={(e) => {
-                    setSortDirection(e.target.value);
-                    setPageIndex(0);
-                }}
-                >
-                <option value="desc">Newest first</option>
-                <option value="asc">Oldest first</option>
-                </select>
+                <div className="page-filters-left">
+                    <div className="filter-group-inline">
+                    <span className="filter-label-inline">Sort by date:</span>
+                    <select
+                        className="filter-select-inline"
+                        value={sortDirection}
+                        onChange={(e) => {
+                        setSortDirection(e.target.value);
+                        setPageIndex(0);
+                        }}
+                    >
+                        <option value="desc">Newest first</option>
+                        <option value="asc">Oldest first</option>
+                    </select>
+                    </div>
+
+                    <div className="filter-group-inline">
+                    <span className="filter-label-inline">Channel:</span>
+                    <select
+                        className="filter-select-inline"
+                        value={channelFilter}
+                        onChange={(e) => {
+                        setChannelFilter(e.target.value);
+                        setPageIndex(0);
+                        }}
+                    >
+                        <option value="">All channels</option>
+                        <option value="in_store">In-store</option>
+                        <option value="online">Online</option>
+                    </select>
+                </div>
             </div>
 
-            <div className="filter-group-inline">
-                <span className="filter-label-inline">Channel:</span>
-                <select
-                className="filter-select-inline"
-                value={channelFilter}
-                onChange={(e) => {
-                    setChannelFilter(e.target.value);
-                    setPageIndex(0);
-                }}
-                >
-                <option value="">All channels</option>
-                <option value="in_store">In-store</option>
-                <option value="online">Online</option>
-                </select>
-            </div>
-
-            <div className="filter-group-inline">
+            <div className="page-filters-right">
+                <div className="filter-group-inline">
                 <span className="filter-label-inline">Rows:</span>
                 <select
-                className="filter-select-inline"
-                value={pageSize}
-                onChange={(e) => {
+                    className="filter-select-inline"
+                    value={pageSize}
+                    onChange={(e) => {
                     setPageSize(Number(e.target.value));
                     setPageIndex(0);
-                }}
+                    }}
                 >
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-                <option value={100}>100</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
                 </select>
+                </div>
             </div>
-        </div>
+            </div>
 
         {loading ? (
             <div className="loading">Loading sales...</div>

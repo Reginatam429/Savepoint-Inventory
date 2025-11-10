@@ -444,10 +444,20 @@ body {
 .page-filters {
   margin: 0.5rem 0 0.75rem;
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between; /* left & right */
   gap: 0.75rem;
+  flex-wrap: wrap;
   font-size: 0.8rem;
   color: #6b7280;
+}
+
+.page-filters-left,
+.page-filters-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .filter-group-inline {
@@ -457,6 +467,14 @@ body {
 }
 
 .filter-label-inline {
+  font-size: 0.78rem;
+}
+
+.filter-select-inline {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
   font-size: 0.78rem;
 }
 
