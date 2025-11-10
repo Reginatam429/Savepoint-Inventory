@@ -293,6 +293,7 @@ npm test
     - Exercise: Custom version of Retail Inventory System
     - Theme: Video game store admin tool
     - Name: SavePoint Inventory
+    - Design of the app is based on reading: https://www.linkedin.com/pulse/how-design-dashboard-ui-10-best-practices-shafayetul-islam/ 
 - Data Model Plan:
     - Decided to add online sales as a second sales channel to make the system more realistic.
     - Added a 'channel' column to sales_orders and updated stored procedures and reports accordingly
