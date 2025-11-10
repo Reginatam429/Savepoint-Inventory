@@ -411,7 +411,7 @@ const Dashboard = ({ onNavigate }) => {
                         <button
                         className="btn-secondary btn-pill"
                         type="button"
-                        onClick={() => onNavigate && onNavigate("products")}
+                        onClick={() => onNavigate && onNavigate("Products")}
                         >
                         Manage stock
                         </button>

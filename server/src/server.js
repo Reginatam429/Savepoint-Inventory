@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
-import { pool } from "./db.js";
 import cors from "cors";
+import { pool } from "./db.js";
 import productsRouter from "./routes/products.js";
 import suppliersRouter from "./routes/suppliers.js";
 import customersRouter from "./routes/customers.js";
@@ -14,8 +14,24 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
-app.use(express.json());
+
+const allowedOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
+    : [];
+
+app.use(cors({
+    origin: function (origin, callback) {
+        // allow requests with no origin (like Swagger UI or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+        } else {
+        return callback(new Error("CORS not allowed from this origin"), false);
+        }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type"]
+}));
 
 app.get("/", (req, res) => {
     res.redirect("/docs");

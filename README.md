@@ -8,6 +8,8 @@
 ```
 🎮 SAVEPOINT INVENTORY | SQL + Node.js Inventory Management System
 
+![SavePoint Inventory demo](assets/savepoint-demo.gif)
+
 SavePoint Inventory is a full-stack SQL-driven inventory management system themed around a modern video game store, inspired by Sony Interactive Entertainment. I chose to build a **Retail Inventory Management System**, but adapted it into a **video game store admin dashboard** — “SavePoint Inventory”.
 
 > 💻 Frontend Deployment: https://savepoint-inventory.netlify.app/
@@ -101,7 +103,7 @@ Table inventory_audit {
 <br></br>
 ## ⚙️ Environment Setup
 
-### Local Development
+### Backend (server) - Local Development
 
 1. **Clone the repo**
     ```bash
@@ -127,7 +129,7 @@ psql -d savepoint_inventory -f db/procedures.sql
 psql -d savepoint_inventory -f db/triggers.sql
 psql -d savepoint_inventory -f db/seed_sales.sql   # optional but recommended so you have a good number of sales data to test
 ```
-5. **Set up your .env file**
+5. **Set up your .env file in `server/`**
 
 ```bash
 DATABASE_URL=postgres://localhost:5432/savepoint_inventory
@@ -144,6 +146,34 @@ http://localhost:3000/docs
 
 http://localhost:3000/health
  → Basic API health check
+
+### Frontend (client) – local development
+
+1. Open a new terminal and from the repo root:
+
+   ```bash
+   cd client
+   npm install
+   ```
+2. Create a .env file in client/:
+  ```
+  VITE_API_BASE_URL=http://localhost:3000
+  ```
+(In production this points at the deployed Heroku API.)
+3. Start the Vite dev server:
+```bash
+npm run dev
+```
+
+4. Open the URL printed in the terminal (usually http://localhost:5173).
+
+Also under the backend `.env` example, you might add `CORS_ORIGIN` if you’re using it:
+
+```md
+DATABASE_URL=postgres://localhost:5432/savepoint_inventory
+PORT=3000
+CORS_ORIGIN=http://localhost:5173
+```
 
 ## 🧪 Testing
 
@@ -180,19 +210,19 @@ npm test
 ```
 ## 🛠 Tech Stack
 **Frontend**  
-
-- React (Vite)  
-- React Router DOM  
-- CSS Modules  
-- Fetch API
+- React (Vite)
+- Axios for API calls
+- Recharts for data visualization
+- Plain CSS for styling
+- Netlify for deployment
 
 **Backend**  
-
-- Node.js  
-- Express.js  
-- PostgreSQL  
-- Swagger UI
-- Heroku 
+- Node.js + Express
+- PostgreSQL
+- node-postgres (pg) client
+- Swagger UI for API docs
+- Jest + Supertest for testing
+- Heroku for deployment
 
 ## 🏪 Dashboard & Reporting
 
@@ -224,7 +254,7 @@ npm test
 
 👥 Customers Management
 
- - View all customers and their loyalty tiers.
+ - View all customers and basic contact info.
 
  - Add, update, or delete customer records.
 
@@ -254,8 +284,6 @@ npm test
 
  - View top-selling products and total revenue over time.
 
- - Identify slow-moving or unsold products.
-
  - Compare revenue by channel (online vs. in-store).
 
  - Evaluate supplier performance through joined sales data.
@@ -279,7 +307,11 @@ npm test
 
 - To make the API and reports easy to demo and test, I split seeding into two stages: Base data (`db/seed.sql`) and Synthetic sales data (`db/seed_sales.sql`)
 
+- Designing a focused admin dashboard. Building the dashboard with Recharts forced me to think about which KPIs actually matter (total revenue, channel mix, low-stock count) and how to drive them from the SQL layer via `/reports/*` endpoints instead of hard-coding numbers in the client.
+
 # Future Development/ Wishlist
 - Add loyalty tier to customers to allow filtering by loyalty and tracking frequent customers - Bronze, Silver, Gold, etc.
 - Add in preorders for filtering and tracking for when the game is released
 - Add a login or role-based access
+- Add a dedicated slow-moving products report for aging inventory.
+- Add supplier performance reports (revenue and units sold per supplier).
