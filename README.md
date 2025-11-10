@@ -310,6 +310,8 @@ npm test
 
 - Designing a focused admin dashboard. Building the dashboard with Recharts forced me to think about which KPIs actually matter (total revenue, channel mix, low-stock count) and how to drive them from the SQL layer via `/reports/*` endpoints instead of hard-coding numbers in the client.
 
+- I learned how to properly configure environment variables for a monorepo deployment on Heroku—separating the buildpack path (APP_BASE=server) from Swagger’s API base URL (SWAGGER_BASE_URL)—to fix Swagger returning HTML instead of JSON and ensure both the backend and frontend work correctly.
+
 # Future Development/ Wishlist
 - Add loyalty tier to customers to allow filtering by loyalty and tracking frequent customers - Bronze, Silver, Gold, etc.
 - Add in preorders for filtering and tracking for when the game is released
