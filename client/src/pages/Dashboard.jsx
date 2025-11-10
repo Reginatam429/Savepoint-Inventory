@@ -1,5 +1,5 @@
 // client/src/pages/Dashboard.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import {
     BarChart,
@@ -12,32 +12,79 @@ import {
     Pie,
     Cell,
     Legend,
+    LineChart,
+    Line,
 } from "recharts";
 
+const getDateRange = (period) => {
+    const now = new Date();
+    const end = now.toISOString().slice(0, 10); // yyyy-mm-dd
+
+    if (period === "last_30") {
+        const start = new Date();
+        start.setDate(start.getDate() - 30);
+        return { from: start.toISOString().slice(0, 10), to: end };
+    }
+
+    if (period === "last_90") {
+        const start = new Date();
+        start.setDate(start.getDate() - 90);
+        return { from: start.toISOString().slice(0, 10), to: end };
+    }
+
+    if (period === "ytd") {
+        const start = new Date(now.getFullYear(), 0, 1); // Jan 1
+        return { from: start.toISOString().slice(0, 10), to: end };
+    }
+
+    // "all"
+    return { from: undefined, to: undefined };
+};
+
 const Dashboard = () => {
+    const [period, setPeriod] = useState("last_90");
+    const [channelFilter, setChannelFilter] = useState("all");
+
+    const [orders, setOrders] = useState([]);
     const [topProducts, setTopProducts] = useState([]);
     const [salesByChannel, setSalesByChannel] = useState([]);
     const [lowStock, setLowStock] = useState([]);
-    const [channelFilter, setChannelFilter] = useState("");
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const { from, to } = getDateRange(period);
+
+        const paramsForSales = {
+        ...(channelFilter !== "all" ? { channel: channelFilter } : {}),
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        };
+
+        const paramsForReports = {
+        ...(channelFilter !== "all" ? { channel: channelFilter } : {}),
+        ...(from ? { from } : {}),
+        ...(to ? { to } : {}),
+        };
+
         const fetchData = async () => {
+        setLoading(true);
         try {
-            const [topRes, channelRes, lowRes] = await Promise.all([
+            const [salesRes, topRes, channelRes, lowRes] = await Promise.all([
+            api.get("/sales", { params: paramsForSales }),
             api.get("/reports/top-products", {
-                params: {
-                limit: 5,
-                channel: channelFilter || undefined,
-                },
+                params: { ...paramsForReports, limit: 5 },
             }),
-            api.get("/reports/sales-by-channel"),
+            api.get("/reports/sales-by-channel", {
+                params: { ...(from ? { from } : {}), ...(to ? { to } : {}) },
+            }),
             api.get("/inventory/low-stock"),
             ]);
 
-            setTopProducts(topRes.data);
-            setSalesByChannel(channelRes.data);
-            setLowStock(lowRes.data);
+            setOrders(salesRes.data || []);
+            setTopProducts(topRes.data || []);
+            setSalesByChannel(channelRes.data || []);
+            setLowStock(lowRes.data || []);
         } catch (err) {
             console.error("Error loading dashboard data", err);
         } finally {
@@ -46,120 +93,279 @@ const Dashboard = () => {
         };
 
         fetchData();
-    }, [channelFilter]);
+    }, [period, channelFilter]);
+
+    const { totalRevenue, totalOrders, avgOrderValue, revenueSeries } = useMemo(() => {
+        if (!orders || orders.length === 0) {
+        return {
+            totalRevenue: 0,
+            totalOrders: 0,
+            avgOrderValue: 0,
+            revenueSeries: [],
+        };
+        }
+
+        let totalRevenueAcc = 0;
+        const dayMap = new Map();
+
+        orders.forEach((o) => {
+        const amount = Number(o.total_amount || 0);
+        totalRevenueAcc += amount;
+
+        const dayKey = o.order_date.slice(0, 10); // yyyy-mm-dd
+        dayMap.set(dayKey, (dayMap.get(dayKey) || 0) + amount);
+        });
+
+        const totalOrders = orders.length;
+        const avgOrderValue = totalOrders ? totalRevenueAcc / totalOrders : 0;
+
+        const revenueSeries = Array.from(dayMap.entries())
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([dateKey, revenue]) => {
+            const d = new Date(dateKey);
+            const label = d.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            });
+            return { dateKey, label, revenue };
+        });
+
+        return {
+        totalRevenue: totalRevenueAcc,
+        totalOrders,
+        avgOrderValue,
+        revenueSeries,
+        };
+    }, [orders]);
+
+    const formatCurrency = (value) =>
+        `$${Number(value || 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+        })}`;
 
     if (loading) {
-        return <div className="p-4">Loading dashboard...</div>;
+        return <div className="page">Loading dashboard...</div>;
     }
 
     return (
-        <div className="p-4 space-y-8">
-        <header className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold">SavePoint Inventory Dashboard</h1>
+        <div className="page">
+        {/* Header + filters */}
+        <div className="page-header">
+            <div>
+            <h1 className="page-title">Dashboard</h1>
+            <p className="page-subtitle">
+                High-level view of SavePoint sales, channels, and inventory health.
+            </p>
+            </div>
 
-            <div className="flex items-center gap-2">
-            <label className="text-sm">Filter top products by channel:</label>
-            <select
-                className="border rounded px-2 py-1 text-sm"
+            <div className="dashboard-filter-group">
+            <div className="filter-group-inline">
+                <span className="filter-label-inline">Period:</span>
+                <select
+                className="filter-select-inline"
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                >
+                <option value="last_30">Last 30 days</option>
+                <option value="last_90">Last 90 days</option>
+                <option value="ytd">Year to date</option>
+                <option value="all">All time</option>
+                </select>
+            </div>
+
+            <div className="filter-group-inline">
+                <span className="filter-label-inline">Channel:</span>
+                <select
+                className="filter-select-inline"
                 value={channelFilter}
                 onChange={(e) => setChannelFilter(e.target.value)}
-            >
-                <option value="">All</option>
+                >
+                <option value="all">All channels</option>
                 <option value="in_store">In-store</option>
                 <option value="online">Online</option>
-            </select>
+                </select>
             </div>
-        </header>
+            </div>
+        </div>
 
-        {/* Top Products */}
-        <section>
-            <h2 className="text-xl font-semibold mb-2">Top-Selling Products</h2>
-            {topProducts.length === 0 ? (
-            <p className="text-sm text-gray-600">No sales data available.</p>
+        {/* GRID ROW 1 */}
+        <div className="dashboard-grid-row1">
+            {/* Revenue over time */}
+            <section className="card card-lg">
+            <div className="card-header">
+                <div>
+                <h2 className="card-title">Revenue over time</h2>
+                <p className="card-subtitle">
+                    Daily revenue in the selected period and channel.
+                </p>
+                </div>
+            </div>
+
+            {revenueSeries.length === 0 ? (
+                <p className="card-empty">No sales data for this period.</p>
             ) : (
-            <div style={{ width: "100%", height: 300 }}>
+                <div className="chart-wrapper">
                 <ResponsiveContainer>
-                <BarChart data={topProducts}>
+                    <LineChart data={revenueSeries}>
+                    <XAxis dataKey="label" />
+                    <YAxis />
+                    <Tooltip
+                        formatter={(value) => formatCurrency(value)}
+                        labelFormatter={(label) => label}
+                    />
+                    <Line
+                        type="monotone"
+                        dataKey="revenue"
+                        dot={false}
+                        strokeWidth={2}
+                    />
+                    </LineChart>
+                </ResponsiveContainer>
+                </div>
+            )}
+            </section>
+
+            {/* KPI cards */}
+            <section className="card card-kpis">
+            <div className="card-header">
+                <h2 className="card-title">Key metrics</h2>
+            </div>
+            <div className="kpi-grid">
+                <div className="kpi-card">
+                <span className="kpi-label">Total revenue</span>
+                <span className="kpi-value">
+                    {formatCurrency(totalRevenue)}
+                </span>
+                </div>
+                <div className="kpi-card">
+                <span className="kpi-label">Total orders</span>
+                <span className="kpi-value">
+                    {totalOrders.toLocaleString()}
+                </span>
+                </div>
+                <div className="kpi-card">
+                <span className="kpi-label">Avg order value</span>
+                <span className="kpi-value">
+                    {totalOrders ? formatCurrency(avgOrderValue) : "—"}
+                </span>
+                </div>
+                <div className="kpi-card">
+                <span className="kpi-label">Low-stock titles</span>
+                <span className="kpi-value">{lowStock.length}</span>
+                </div>
+            </div>
+            </section>
+
+            {/* Sales by channel pie */}
+            <section className="card">
+            <div className="card-header">
+                <h2 className="card-title">Sales by channel</h2>
+                <p className="card-subtitle">
+                Revenue split across in-store vs online.
+                </p>
+            </div>
+
+            {salesByChannel.length === 0 ? (
+                <p className="card-empty">No channel data for this period.</p>
+            ) : (
+                <div className="chart-wrapper chart-wrapper-small">
+                <ResponsiveContainer>
+                    <PieChart>
+                    <Pie
+                        data={salesByChannel}
+                        dataKey="total_revenue"
+                        nameKey="channel"
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        label
+                    >
+                        {salesByChannel.map((entry, index) => (
+                        <Cell key={index} />
+                        ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                    <Legend />
+                    </PieChart>
+                </ResponsiveContainer>
+                </div>
+            )}
+            </section>
+        </div>
+
+        {/* GRID ROW 2 */}
+        <div className="dashboard-grid-row2">
+            {/* Top products */}
+            <section className="card">
+            <div className="card-header">
+                <div>
+                <h2 className="card-title">Top-selling products</h2>
+                <p className="card-subtitle">
+                    By units sold in the selected period / channel.
+                </p>
+                </div>
+            </div>
+
+            {topProducts.length === 0 ? (
+                <p className="card-empty">No sales data.</p>
+            ) : (
+                <div className="chart-wrapper">
+                <ResponsiveContainer>
+                    <BarChart data={topProducts}>
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
                     <Bar dataKey="total_units_sold" />
-                </BarChart>
+                    </BarChart>
                 </ResponsiveContainer>
-            </div>
+                </div>
             )}
-        </section>
+            </section>
 
-        {/* Sales by Channel */}
-        <section>
-            <h2 className="text-xl font-semibold mb-2">Sales by Channel</h2>
-            {salesByChannel.length === 0 ? (
-            <p className="text-sm text-gray-600">No channel data available.</p>
-            ) : (
-            <div style={{ width: "100%", height: 260 }}>
-                <ResponsiveContainer>
-                <PieChart>
-                    <Pie
-                    data={salesByChannel}
-                    dataKey="total_revenue"
-                    nameKey="channel"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    label
-                    >
-                    {salesByChannel.map((entry, index) => (
-                        <Cell key={index} />
-                    ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                </PieChart>
-                </ResponsiveContainer>
+            {/* Low stock table */}
+            <section className="card card-low-stock">
+            <div className="card-header">
+                <div>
+                <h2 className="card-title">Low stock alerts</h2>
+                <p className="card-subtitle">
+                    Products below their reorder level.
+                </p>
+                </div>
             </div>
-            )}
-        </section>
 
-        {/* Low Stock Table */}
-        <section>
-            <h2 className="text-xl font-semibold mb-2">Low Stock Alerts</h2>
             {lowStock.length === 0 ? (
-            <p className="text-sm text-gray-600">
+                <p className="card-empty">
                 No products are currently below their reorder level.
-            </p>
+                </p>
             ) : (
-            <div className="overflow-x-auto">
-                <table className="min-w-full text-sm border">
-                <thead>
-                    <tr className="bg-gray-100">
-                    <th className="px-2 py-1 border">Product</th>
-                    <th className="px-2 py-1 border">Platform</th>
-                    <th className="px-2 py-1 border">On Hand</th>
-                    <th className="px-2 py-1 border">Reorder Level</th>
-                    <th className="px-2 py-1 border">Supplier</th>
+                <div className="table-wrapper table-scroll-small">
+                <table className="table table-compact">
+                    <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Platform</th>
+                        <th>On hand</th>
+                        <th>Reorder</th>
+                        <th>Supplier</th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     {lowStock.map((item) => (
-                    <tr key={item.product_id}>
-                        <td className="px-2 py-1 border">{item.name}</td>
-                        <td className="px-2 py-1 border">{item.platform}</td>
-                        <td className="px-2 py-1 border">
-                        {item.quantity_on_hand}
-                        </td>
-                        <td className="px-2 py-1 border">
-                        {item.reorder_level}
-                        </td>
-                        <td className="px-2 py-1 border">
-                        {item.supplier_name}
-                        </td>
-                    </tr>
+                        <tr key={item.product_id}>
+                        <td>{item.name}</td>
+                        <td>{item.platform}</td>
+                        <td>{item.quantity_on_hand}</td>
+                        <td>{item.reorder_level}</td>
+                        <td>{item.supplier_name}</td>
+                        </tr>
                     ))}
-                </tbody>
+                    </tbody>
                 </table>
-            </div>
+                </div>
             )}
-        </section>
+            </section>
+        </div>
         </div>
     );
 };
