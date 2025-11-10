@@ -1,4 +1,3 @@
-// client/src/pages/Dashboard.jsx
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../api";
 import {
@@ -16,9 +15,12 @@ import {
     Line,
 } from "recharts";
 
+const CHANNEL_COLORS = ["#14b8a6", "#6366f1"]; // turquoise + indigo
+const PRODUCT_COLORS = ["#06b6d4", "#22c55e", "#a855f7", "#f97316", "#ec4899"];
+
 const getDateRange = (period) => {
     const now = new Date();
-    const end = now.toISOString().slice(0, 10); // yyyy-mm-dd
+    const end = now.toISOString().slice(0, 10);
 
     if (period === "last_30") {
         const start = new Date();
@@ -33,12 +35,11 @@ const getDateRange = (period) => {
     }
 
     if (period === "ytd") {
-        const start = new Date(now.getFullYear(), 0, 1); // Jan 1
+        const start = new Date(now.getFullYear(), 0, 1);
         return { from: start.toISOString().slice(0, 10), to: end };
     }
 
-    // "all"
-    return { from: undefined, to: undefined };
+    return { from: undefined, to: undefined }; // all time
 };
 
 const Dashboard = () => {
@@ -95,48 +96,64 @@ const Dashboard = () => {
         fetchData();
     }, [period, channelFilter]);
 
-    const { totalRevenue, totalOrders, avgOrderValue, revenueSeries } = useMemo(() => {
+    // --- KPIs + revenue series from orders ---
+    const { totalRevenue, totalOrders, avgOrderValue, revenueSeries } = useMemo(
+        () => {
         if (!orders || orders.length === 0) {
-        return {
+            return {
             totalRevenue: 0,
             totalOrders: 0,
             avgOrderValue: 0,
             revenueSeries: [],
-        };
+            };
         }
 
         let totalRevenueAcc = 0;
         const dayMap = new Map();
 
         orders.forEach((o) => {
-        const amount = Number(o.total_amount || 0);
-        totalRevenueAcc += amount;
+            const amount = Number(o.total_amount || 0);
+            totalRevenueAcc += amount;
 
-        const dayKey = o.order_date.slice(0, 10); // yyyy-mm-dd
-        dayMap.set(dayKey, (dayMap.get(dayKey) || 0) + amount);
+            const dayKey = o.order_date.slice(0, 10);
+            dayMap.set(dayKey, (dayMap.get(dayKey) || 0) + amount);
         });
 
         const totalOrders = orders.length;
         const avgOrderValue = totalOrders ? totalRevenueAcc / totalOrders : 0;
 
         const revenueSeries = Array.from(dayMap.entries())
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([dateKey, revenue]) => {
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([dateKey, revenue]) => {
             const d = new Date(dateKey);
             const label = d.toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
+                month: "short",
+                day: "numeric",
             });
             return { dateKey, label, revenue };
-        });
+            });
 
         return {
-        totalRevenue: totalRevenueAcc,
-        totalOrders,
-        avgOrderValue,
-        revenueSeries,
+            totalRevenue: totalRevenueAcc,
+            totalOrders,
+            avgOrderValue,
+            revenueSeries,
         };
-    }, [orders]);
+        },
+        [orders]
+    );
+
+    // --- Safe, numeric data for channel pie ---
+    const channelChartData = useMemo(
+        () =>
+        (salesByChannel || [])
+            .map((row) => ({
+            channel: row.channel,
+            total_revenue: Number(row.total_revenue || 0),
+            }))
+            .filter((r) => r.total_revenue > 0),
+        [salesByChannel]
+    );
 
     const formatCurrency = (value) =>
         `$${Number(value || 0).toLocaleString(undefined, {
@@ -189,7 +206,7 @@ const Dashboard = () => {
             </div>
         </div>
 
-        {/* GRID ROW 1 */}
+        {/* ROW 1 */}
         <div className="dashboard-grid-row1">
             {/* Revenue over time */}
             <section className="card card-lg">
@@ -226,18 +243,20 @@ const Dashboard = () => {
             )}
             </section>
 
-            {/* KPI cards */}
+            {/* Key metrics */}
             <section className="card card-kpis">
             <div className="card-header">
                 <h2 className="card-title">Key metrics</h2>
             </div>
-            <div className="kpi-grid">
-                <div className="kpi-card">
-                <span className="kpi-label">Total revenue</span>
-                <span className="kpi-value">
-                    {formatCurrency(totalRevenue)}
+
+            <div className="kpi-headline">
+                <span className="kpi-headline-label">Total revenue</span>
+                <span className="kpi-headline-value">
+                {formatCurrency(totalRevenue)}
                 </span>
-                </div>
+            </div>
+
+            <div className="kpi-grid">
                 <div className="kpi-card">
                 <span className="kpi-label">Total orders</span>
                 <span className="kpi-value">
@@ -257,23 +276,27 @@ const Dashboard = () => {
             </div>
             </section>
 
-            {/* Sales by channel pie */}
+            {/* Sales by channel */}
             <section className="card">
             <div className="card-header">
+                <div>
                 <h2 className="card-title">Sales by channel</h2>
                 <p className="card-subtitle">
-                Revenue split across in-store vs online.
+                    Revenue split across in-store vs online.
                 </p>
+                </div>
             </div>
 
-            {salesByChannel.length === 0 ? (
-                <p className="card-empty">No channel data for this period.</p>
+            {channelChartData.length === 0 ? (
+                <p className="card-empty">
+                No channel data for this period.
+                </p>
             ) : (
                 <div className="chart-wrapper chart-wrapper-small">
                 <ResponsiveContainer>
                     <PieChart>
                     <Pie
-                        data={salesByChannel}
+                        data={channelChartData}
                         dataKey="total_revenue"
                         nameKey="channel"
                         cx="50%"
@@ -281,11 +304,16 @@ const Dashboard = () => {
                         outerRadius={80}
                         label
                     >
-                        {salesByChannel.map((entry, index) => (
-                        <Cell key={index} />
+                        {channelChartData.map((entry, index) => (
+                        <Cell
+                            key={`cell-${index}`}
+                            fill={
+                            CHANNEL_COLORS[index % CHANNEL_COLORS.length]
+                            }
+                        />
                         ))}
                     </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(value)} />
+                    <Tooltip formatter={(v) => formatCurrency(v)} />
                     <Legend />
                     </PieChart>
                 </ResponsiveContainer>
@@ -294,7 +322,7 @@ const Dashboard = () => {
             </section>
         </div>
 
-        {/* GRID ROW 2 */}
+        {/* ROW 2 */}
         <div className="dashboard-grid-row2">
             {/* Top products */}
             <section className="card">
@@ -316,14 +344,23 @@ const Dashboard = () => {
                     <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="total_units_sold" />
+                    <Bar dataKey="total_units_sold">
+                        {topProducts.map((entry, index) => (
+                        <Cell
+                            key={`bar-${index}`}
+                            fill={
+                            PRODUCT_COLORS[index % PRODUCT_COLORS.length]
+                            }
+                        />
+                        ))}
+                    </Bar>
                     </BarChart>
                 </ResponsiveContainer>
                 </div>
             )}
             </section>
 
-            {/* Low stock table */}
+            {/* Low stock */}
             <section className="card card-low-stock">
             <div className="card-header">
                 <div>
