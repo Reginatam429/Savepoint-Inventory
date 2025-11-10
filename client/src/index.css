@@ -100,7 +100,7 @@ body {
 /* Main content area */
 .app-main {
   flex: 1;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   padding: 1.75rem 1.5rem 2.5rem;
 }
@@ -110,6 +110,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+}
+
+.page > .card {
+  width: 100%;
 }
 
 .page-header {
@@ -128,6 +132,12 @@ body {
   margin: 0.25rem 0 0;
   font-size: 0.85rem;
   color: #6b7280;
+}
+
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 /* Dashboard layout */
@@ -271,4 +281,189 @@ body {
   .dashboard-title {
     font-size: 1.6rem;
   }
+}
+/* Scrollable table for Sales */
+.table-scroll {
+  max-height: 420px;
+  min-height: 460px;
+  min-width: 500px;
+  overflow-y: auto;
+}
+
+/* Header controls */
+.page-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.page-controls-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.page-size-select {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+}
+
+/* Actions cell */
+.table-actions-cell {
+  white-space: nowrap;
+  text-align: right;
+}
+
+/* Table footer */
+.table-footer {
+  margin-top: 0.5rem;
+  font-size: 0.78rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.table-footer-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.btn-pill {
+  padding: 0.25rem 0.8rem;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem 1.75rem 1.25rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.35);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.modal-subtitle {
+  margin: 0.3rem 0 1rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.form-field label {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.form-field input,
+.form-field select {
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 0.85rem;
+}
+
+.form-error {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: #b91c1c;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+/* Buttons */
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-link {
+  font-size: 0.8rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  padding: 0.45rem 0.9rem;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.btn-link {
+  padding: 0;
+  background: none;
+  color: #2563eb;
+  font-weight: 500;
+}
+
+/* table filter */
+.page-filters {
+  margin: 0.5rem 0 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.filter-group-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.filter-label-inline {
+  font-size: 0.78rem;
+}
+
+.filter-select-inline {
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 0.78rem;
 }

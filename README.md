@@ -278,3 +278,4 @@ npm test
 # Future Development/ Wishlist
 - Add loyalty tier to customers to allow filtering by loyalty and tracking frequent customers - Bronze, Silver, Gold, etc.
 - Add in preorders for filtering and tracking for when the game is released
+- Add a login or role-based access

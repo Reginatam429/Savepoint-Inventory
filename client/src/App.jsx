@@ -3,6 +3,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import ProductsPage from "./pages/ProductsPage.jsx";
 import CustomersPage from "./pages/CustomersPage.jsx";
 import SalesPage from "./pages/SalesPage.jsx";
+import savepointLogo from "./assets/savepoint-logo.png";
+
 
 const TABS = ["Dashboard", "Products", "Customers", "Sales"];
 
@@ -28,7 +30,11 @@ const App = () => {
       {/* Top navigation bar */}
       <header className="top-nav">
         <div className="nav-left">
-          <div className="logo-mark">🎮</div>
+          <img
+            src={savepointLogo}
+            alt="SavePoint Logo"
+            className="logo-mark"
+          />
           <div className="logo-text">
             <span className="logo-title">SavePoint</span>
             <span className="logo-subtitle">Inventory Console</span>
