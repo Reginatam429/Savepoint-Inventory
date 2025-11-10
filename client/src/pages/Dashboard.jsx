@@ -42,7 +42,7 @@ const getDateRange = (period) => {
     return { from: undefined, to: undefined }; // all time
 };
 
-const Dashboard = () => {
+const Dashboard = ({ onNavigate }) => {
     const [period, setPeriod] = useState("last_90");
     const [channelFilter, setChannelFilter] = useState("all");
 
@@ -400,6 +400,23 @@ const Dashboard = () => {
                     </tbody>
                 </table>
                 </div>
+            )}
+            {lowStock.length > 0 && (
+                <div className="table-footer">
+                    <span>
+                        {lowStock.length} product
+                        {lowStock.length === 1 ? "" : "s"} below reorder level
+                    </span>
+                    <div className="table-footer-actions">
+                        <button
+                        className="btn-secondary btn-pill"
+                        type="button"
+                        onClick={() => onNavigate && onNavigate("products")}
+                        >
+                        Manage stock
+                        </button>
+                    </div>
+                    </div>
             )}
             </section>
         </div>

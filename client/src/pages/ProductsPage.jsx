@@ -49,6 +49,13 @@ const ProductsPage = () => {
     const [saving, setSaving] = useState(false);
     const [editError, setEditError] = useState("");
 
+    // receive stock modal
+    const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
+    const [receiveQuantity, setReceiveQuantity] = useState(1);
+    const [receiveError, setReceiveError] = useState("");
+    const [receiving, setReceiving] = useState(false);
+
+
     useEffect(() => {
         const load = async () => {
         try {
@@ -193,6 +200,47 @@ const ProductsPage = () => {
     const closeEditModal = () => {
         setIsEditModalOpen(false);
         setSelectedProduct(null);
+    };
+
+    // ---- Receive stock handlers ----
+    const openReceiveModal = (product) => {
+        setSelectedProduct(product);
+        setReceiveQuantity(1);
+        setReceiveError("");
+        setIsReceiveModalOpen(true);
+    };
+    
+    const closeReceiveModal = () => {
+        setIsReceiveModalOpen(false);
+        setSelectedProduct(null);
+    };
+    
+    const handleReceiveSave = async () => {
+        if (!selectedProduct) return;
+        const qty = Number(receiveQuantity);
+    
+        if (!qty || qty <= 0) {
+        setReceiveError("Quantity must be greater than zero.");
+        return;
+        }
+    
+        setReceiving(true);
+        setReceiveError("");
+    
+        try {
+        await api.post("/inventory/receive", {
+            product_id: selectedProduct.id,
+            quantity: qty,
+        });
+    
+        await refreshProducts(); // reload table so On Hand updates
+        closeReceiveModal();
+        } catch (err) {
+        console.error("Error receiving stock", err);
+        setReceiveError("Failed to receive stock. Please try again.");
+        } finally {
+        setReceiving(false);
+        }
     };
 
     const handleEditChange = (e) => {
@@ -410,13 +458,21 @@ const ProductsPage = () => {
                         </td>
                         <td>{p.quantity_on_hand ?? "—"}</td>
                         <td className="table-actions-cell">
-                        <button
-                            className="btn-link"
-                            type="button"
-                            onClick={() => openEditModal(p)}
-                        >
-                            Edit
-                        </button>
+                            <button
+                                className="btn-link"
+                                type="button"
+                                onClick={() => openEditModal(p)}
+                            >
+                                Edit
+                            </button>
+                            {" · "}
+                            <button
+                                className="btn-link"
+                                type="button"
+                                onClick={() => openReceiveModal(p)}
+                            >
+                                Receive
+                            </button>
                         </td>
                     </tr>
                     ))}
@@ -773,6 +829,60 @@ const ProductsPage = () => {
                 </button>
                 </div>
             </div>
+            </div>
+        )}
+        {/* Receive stock modal */}
+        {isReceiveModalOpen && selectedProduct && (
+            <div className="modal-backdrop" onClick={closeReceiveModal}>
+                <div
+                className="modal"
+                onClick={(e) => {
+                    e.stopPropagation();
+                }}
+                >
+                <h2 className="modal-title">
+                    Receive stock – {selectedProduct.name}
+                </h2>
+                <p className="modal-subtitle">
+                    Increase on-hand quantity for this product. This uses the
+                    <code>sp_receive_stock</code> procedure so inventory and audit
+                    logs stay consistent.
+                </p>
+
+                <div className="modal-body">
+                    <div className="form-field">
+                    <label htmlFor="receive-quantity">Quantity to add</label>
+                    <input
+                        id="receive-quantity"
+                        type="number"
+                        min="1"
+                        value={receiveQuantity}
+                        onChange={(e) => setReceiveQuantity(e.target.value)}
+                    />
+                    </div>
+
+                    {receiveError && <p className="form-error">{receiveError}</p>}
+                </div>
+
+                <div className="modal-footer">
+                    <button
+                    className="btn-secondary"
+                    type="button"
+                    onClick={closeReceiveModal}
+                    disabled={receiving}
+                    >
+                    Cancel
+                    </button>
+                    <button
+                    className="btn-primary"
+                    type="button"
+                    onClick={handleReceiveSave}
+                    disabled={receiving}
+                    >
+                    {receiving ? "Updating..." : "Receive stock"}
+                    </button>
+                </div>
+                </div>
             </div>
         )}
         </div>

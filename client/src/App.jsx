@@ -21,7 +21,7 @@ const App = () => {
         return <SalesPage />;
       case "Dashboard":
       default:
-        return <Dashboard />;
+        return <Dashboard onNavigate={setActiveTab}/>;
     }
   };
 

@@ -268,6 +268,10 @@ npm test
 - Data Model Plan:
     - Decided to add online sales as a second sales channel to make the system more realistic.
     - Added a 'channel' column to sales_orders and updated stored procedures and reports accordingly
+- Used stored procedures for sales and receiving stock to keep business logic close to the data.
+- /inventory/receive in the API is a thin wrapper over sp_receive_stock, and the Products page “Receive” modal calls this.
+- The Dashboard low-stock card is read-only but includes a “Manage stock” call-to-action that routes users to the Products view to actually restock.
+
 ## Learnings
 - I learned how to encapsulate business logic inside the database layer by writing SQL functions such as sp_record_sale and sp_receive_stock. These functions allow me to perform multiple steps (insert order, insert order items, update inventory) in a single transactional call, enforcing rules (e.g., quantity must be >0, sufficient stock) and returning a meaningful result (order ID).PostgreSQL Docs: Functions → https://www.postgresql.org/docs/current/functions.html
 
